@@ -10,7 +10,6 @@ from psycopg2.extras import execute_values, Json
 import json
 
 def lambda_handler(event, context):
-    print("SOMETHING")
     if 'tickers' in event['queryStringParameters']:
         tickers = event['queryStringParameters']['tickers']
         STOCKS = [stock.upper() for stock in tickers.split(',')]
@@ -160,5 +159,5 @@ def lambda_handler(event, context):
 
     return {
         'statusCode': 200,
-        'body': json.dumps('Success :(')
+        'body': json.dumps('The following stocks have been updated: ' + STOCK_STRING)
     }
