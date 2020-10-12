@@ -13,6 +13,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        
+      - name: Configure AWS credentials from Test account
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: us-east-1
+
       - name: Deploy fin-test
         run: |
           cd fin-test
@@ -26,9 +34,3 @@ jobs:
           aws configure
           aws s3api put-object --bucket a-api --key lambda_function.zip --body lambda_function.zip
           aws lambda update-function-code --function-name fin-test --s3-bucket a-api --s3-key lambda_function.zip
-        env:
-          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws_region: eu-west-1
-          function_name: fin-test
-          zip_file: lambda_function.zip
