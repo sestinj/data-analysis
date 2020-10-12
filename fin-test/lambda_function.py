@@ -10,7 +10,7 @@ from psycopg2.extras import execute_values, Json
 import json
 
 def lambda_handler(event, context):
-    
+    print("SOMETHING")
     if 'tickers' in event['queryStringParameters']:
         tickers = event['queryStringParameters']['tickers']
         STOCKS = [stock.upper() for stock in tickers.split(',')]
