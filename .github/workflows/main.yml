@@ -25,6 +25,7 @@ jobs:
 
       # Runs a set of commands using the runners shell
       - name: Run a multi-line script
+      - uses: actions/checkout@v2
         with:
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -32,7 +33,6 @@ jobs:
           function_name: fin-test
           zip_file: lambda_function.zip
         run: |
-          function update-mtf() {
           cd fin-test
           python -m pip3 install --upgrade pip
           pip3 install --target ./package yfinance
@@ -43,5 +43,3 @@ jobs:
           zip -g lambda_function.zip lambda_function.py
           aws s3api put-object --bucket a-api --key lambda_function.zip --body lambda_function.zip
           aws lambda update-function-code --function-name fin-test --s3-bucket a-api --s3-key lambda_function.zip
-          }
-          update-mtf
