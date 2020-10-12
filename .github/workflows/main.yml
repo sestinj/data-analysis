@@ -25,11 +25,15 @@ jobs:
         run: |
           cd fin-test
           python -m pip install --upgrade pip
-          pip install --target ./package yfinance
+          pip install --target ./package -r requirements.txt
           cd package
           rm -r pandas numpy *.dist-info
           zip -r9 ${OLDPWD}/lambda_function.zip .
           cd ..
           zip -g lambda_function.zip lambda_function.py
           aws s3api put-object --bucket a-api --key lambda_function.zip --body lambda_function.zip
-          aws lambda update-function-code --function-name fin-test --s3-bucket a-api --s3-key lambda_function.zip
+          funcs=( fin-test get-all-tickers )
+          for i in "${funcs[@]}"
+          do
+          aws lambda update-function-code --function-name $i --s3-bucket a-api --s3-key lambda_function.zip
+          done

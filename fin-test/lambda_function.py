@@ -1,6 +1,7 @@
   
 import yfinance as yf
 import pandas as pd
+import os
 
 import psycopg2 as pg
 from psycopg2 import extras, sql
@@ -9,7 +10,57 @@ from psycopg2.extras import execute_values, Json
 
 import json
 
+#UTILITY FUNCTIONS
+def connect_postgres():
+    """
+    Connects to AWS RDS postgres database
+    """
+    postgres_connection = pg.connect(
+        host = os.environ.get('HOST'),
+        database= "postgres",
+        user="postgres",
+        password=os.environ.get('PASSWORD')
+    )
+    cursor = postgres_connection.cursor()
+    return (postgres_connection, cursor)
+
+
+def get_stocks_in_database(cursor):
+    search_query = '''
+        select distinct stock_name
+        from financial_data
+        '''
+    cursor.execute(search_query)
+    database_stocks = cursor.fetchall()
+
+    current_stocks = [item[0] for item in database_stocks]
+
+    return current_stocks
+
+#LAMBDA FUNCTIONS
+def get_all_tickers(event, context):
+    """
+    Lambda Function get-all-tickers
+    Returns list of all tickers in the table.
+    """
+    postgres_connection, cursor = connect_postgres()
+
+    current_stocks = get_stocks_in_database(cursor)
+
+    postgres_connection.close()
+
+    return {
+        'statusCode': 200,
+        'body': json.dumps(current_stocks)
+    }
+
+
 def lambda_handler(event, context):
+    """
+    Lambda Function fin-test
+    Adds tickers specified in queryStringParameters to table and updates all for current data.
+    Runs on stock market close and HTTP call.
+    """
     if 'tickers' in event['queryStringParameters']:
         tickers = event['queryStringParameters']['tickers']
         STOCKS = [stock.upper() for stock in tickers.split(',')]
@@ -17,12 +68,8 @@ def lambda_handler(event, context):
         #Shouldn't be hardcoded. Does this script already update all preexisting stocks in the db?
         STOCKS = ['AMZN', 'NLOK']
     
-    postgres_connection = pg.connect(
-        host = "finance-models.cvcg7dv0e6gx.us-east-2.rds.amazonaws.com",
-        database= "postgres",
-        user="postgres",
-        password="qUbzNkT2CIdHFoxgyWJn"
-    )
+    # Start the Database Connection
+    postgres_connection, cursor = connect_postgres()
 
     STOCK_STRING = " ".join(STOCKS)
 
@@ -48,19 +95,6 @@ def lambda_handler(event, context):
         "External Unique Identifier": "external_unique_identifier"
     }
 
-    search_query = '''
-        select distinct stock_name
-        from financial_data
-        '''
-
-    def get_stocks_in_database():
-        cursor.execute(search_query)
-        database_stocks = cursor.fetchall()
-
-        current_stocks = [item[0] for item in database_stocks]
-
-        return current_stocks
-
     def get_historical_data(df, database_stocks, stocks):
         current_stock_string = " ".join(database_stocks)
 
@@ -85,13 +119,10 @@ def lambda_handler(event, context):
 
         return df
 
-    # Start the Database Connection
-    cursor = postgres_connection.cursor()
-
     df = pd.DataFrame(columns=columns)
 
     # Find all Stocks currently in Database
-    stocks_in_db = get_stocks_in_database()
+    stocks_in_db = get_stocks_in_database(cursor)
     historical_data_to_get = list()
     for stock in STOCKS:
         if stock not in stocks_in_db:
