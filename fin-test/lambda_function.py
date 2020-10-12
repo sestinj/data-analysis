@@ -51,6 +51,7 @@ def get_all_tickers(event, context):
 
     return {
         'statusCode': 200,
+        'headers': { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
         'body': json.dumps(current_stocks)
     }
 
@@ -191,5 +192,6 @@ def lambda_handler(event, context):
 
     return {
         'statusCode': 200,
+        'headers': { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
         'body': json.dumps('The following stocks have been updated: ' + STOCK_STRING)
     }
