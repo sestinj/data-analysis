@@ -16,7 +16,7 @@ def lambda_handler(event, context):
         STOCKS = [stock.upper() for stock in tickers.split(',')]
     else:
         STOCKS = ['AMZN', 'NLOK']
-    
+
     postgres_connection = pg.connect(
         host = "finance-models.cvcg7dv0e6gx.us-east-2.rds.amazonaws.com",
         database= "postgres",
@@ -53,45 +53,16 @@ def lambda_handler(event, context):
         from financial_data
         '''
 
-    def get_stocks_in_database():
-        cursor.execute(search_query)
-        database_stocks = cursor.fetchall()
-
-        current_stocks = [item[0] for item in database_stocks]
-
-        return current_stocks
-
-    def get_historical_data(df, database_stocks, stocks):
-        current_stock_string = " ".join(database_stocks)
-
-        if current_stock_string:
-            historical_data = yf.Tickers(current_stock_string).history(period="max", group_by="ticker")
-            for stock in stocks:
-                filtered_hist_data = historical_data[stock]
-                filtered_hist_data.dropna(axis=0, inplace=True, subset=["Open", "Close"])
-                filtered_hist_data.reset_index(inplace=True)
-                filtered_hist_data.insert(0, "Stock", stock)
-                df = pd.concat([df, filtered_hist_data], sort=True, ignore_index=True)
-
-        return df
-
-    def get_data(df, stocks):
-        current_data = yf.download(tickers=STOCK_STRING, group_by="ticker", period="1d")
-        for stock in stocks:
-            filtered_data = current_data[stock]
-            filtered_data.reset_index(inplace=True)
-            filtered_data.insert(0, "Stock", stock)
-            df = pd.concat([df, filtered_data], sort=True, ignore_index=True)
-
-        return df
-
     # Start the Database Connection
     cursor = postgres_connection.cursor()
 
     df = pd.DataFrame(columns=columns)
 
     # Find all Stocks currently in Database
-    stocks_in_db = get_stocks_in_database()
+    cursor.execute(search_query)
+    database_stocks = cursor.fetchall()
+
+    stocks_in_db = [item[0] for item in database_stocks]
     historical_data_to_get = list()
     for stock in STOCKS:
         if stock not in stocks_in_db:
@@ -99,10 +70,27 @@ def lambda_handler(event, context):
 
     # Get historical data for stocks not currently in the database
     if historical_data_to_get:
-        df = get_historical_data(df, historical_data_to_get, STOCKS)
+        if len(historical_data_to_get) > 1:
+            current_stock_string = " ".join(historical_data_to_get)
+            historical_data = yf.Tickers(current_stock_string).history(period="max", group_by="ticker")
+        else:
+            current_stock_string = historical_data_to_get[0]
+            historical_data = yf.Ticker(current_stock_string).history(period="max", group_by="ticket")
+
+        for stock in historical_data_to_get:
+            filtered_hist_data = historical_data[stock]
+            filtered_hist_data.dropna(axis=0, inplace=True, subset=["Open", "Close"])
+            filtered_hist_data.reset_index(inplace=True)
+            filtered_hist_data.insert(0, "Stock", stock)
+            df = pd.concat([df, filtered_hist_data], sort=True, ignore_index=True)
 
     # Get today's data for all stocks
-    df = get_data(df, STOCKS)
+    current_data = yf.download(tickers=STOCK_STRING, group_by="ticker", period="1d")
+    for stock in STOCKS:
+        filtered_data = current_data[stock]
+        filtered_data.reset_index(inplace=True)
+        filtered_data.insert(0, "Stock", stock)
+        df = pd.concat([df, filtered_data], sort=True, ignore_index=True)
 
     df["Date"] = df["Date"].dt.strftime('%Y-%m-%d')
 
