@@ -14,6 +14,7 @@ def lambda_handler(event, context):
         tickers = event['queryStringParameters']['tickers']
         STOCKS = [stock.upper() for stock in tickers.split(',')]
     else:
+        #Shouldn't be hardcoded. Does this script already update all preexisting stocks in the db?
         STOCKS = ['AMZN', 'NLOK']
     
     postgres_connection = pg.connect(
