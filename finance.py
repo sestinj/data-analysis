@@ -50,35 +50,56 @@ search_query = '''
     from financial_data
     '''
 
-# Run SQL Query
-cursor = postgres_connection.cursor()
+def get_stocks_in_database():
+    cursor.execute(search_query)
+    database_stocks = cursor.fetchall()
 
-cursor.execute(search_query)
-database_stocks = cursor.fetchall()
+    current_stocks = [item[0] for item in database_stocks]
 
-# postgres_connection.close()
+    return current_stocks
 
-current_stocks = [item[0] for item in database_stocks]
+def get_historical_data(df, database_stocks, stocks):
+    current_stock_string = " ".join(database_stocks)
 
-current_stock_string = " ".join(current_stocks)
+    if current_stock_string:
+        historical_data = yf.Tickers(current_stock_string).history(period="max", group_by="ticker")
+        for stock in stocks:
+            filtered_hist_data = historical_data[stock]
+            filtered_hist_data.dropna(axis=0, inplace=True, subset=["Open", "Close"])
+            filtered_hist_data.reset_index(inplace=True)
+            filtered_hist_data.insert(0, "Stock", stock)
+            df = pd.concat([df, filtered_hist_data], sort=True, ignore_index=True)
 
-df = pd.DataFrame(columns=columns)
+    return df
 
-if not current_stock_string:
-    historical_data = yf.Tickers(STOCK_STRING).history(period="max", group_by="ticker")
-    for stock in STOCKS:
-        filtered_hist_data = historical_data[stock]
-        filtered_hist_data.dropna(axis=0, inplace=True, subset=["Open", "Close"])
-        filtered_hist_data.reset_index(inplace=True)
-        filtered_hist_data.insert(0, "Stock", stock)
-        df = pd.concat([df, filtered_hist_data], sort=True, ignore_index=True)
-else:
+def get_data(df, stocks):
     current_data = yf.download(tickers=STOCK_STRING, group_by="ticker", period="1d")
-    for stock in STOCKS:
+    for stock in stocks:
         filtered_data = current_data[stock]
         filtered_data.reset_index(inplace=True)
         filtered_data.insert(0, "Stock", stock)
         df = pd.concat([df, filtered_data], sort=True, ignore_index=True)
+
+    return df
+
+# Start the Database Connection
+cursor = postgres_connection.cursor()
+
+df = pd.DataFrame(columns=columns)
+
+# Find all Stocks currently in Database
+stocks_in_db = get_stocks_in_database()
+historical_data_to_get = list()
+for stock in STOCKS:
+    if stock not in stocks_in_db:
+        historical_data_to_get.append(stock)
+
+# Get historical data for stocks not currently in the database
+if historical_data_to_get:
+    df = get_historical_data(df, historical_data_to_get, STOCKS)
+
+# Get today's data for all stocks
+df = get_data(df, STOCKS)
 
 df["Date"] = df["Date"].dt.strftime('%Y-%m-%d')
 
@@ -126,8 +147,6 @@ query = '''
         '''
 
 # Run SQL Query
-# cursor = postgres_connection.cursor()
-
 with cursor as conn:
     pg.extras.execute_values(conn, query, tuple_list)
     postgres_connection.commit()
