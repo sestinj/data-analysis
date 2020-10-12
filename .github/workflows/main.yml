@@ -16,8 +16,8 @@ jobs:
       - name: Deploy fin-test
         run: |
           cd fin-test
-          python -m pip3 install --upgrade pip
-          pip3 install --target ./package yfinance
+          python -m pip install --upgrade pip
+          pip install --target ./package yfinance
           cd package
           rm -r pandas numpy *.dist-info
           zip -r9 ${OLDPWD}/lambda_function.zip .
