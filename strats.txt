@@ -1,0 +1,18 @@
+- rolling averages
+- start of day rush
+- correlation between certain tickers
+- genetic algorithm
+- nn
+- fourier transform to buy at troughs and sell at peaks
+- go through a bunch of academic papers and combine into ensemble
+- sentiment analysis on rss/twitter
+- time to grow 1%
+- twitter weighted by number of followers
+- foursquare
+- weather data
+- web-scraping
+- find weird markets (ebay, sports, etc...)
+- pairs trading
+- number of employees
+- legislation
+- when other nations reopen, at what point do certain industries rise in value?
