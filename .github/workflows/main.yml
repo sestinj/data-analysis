@@ -1,0 +1,35 @@
+# This is a basic workflow to help you get started with Actions
+name: CI
+
+on: 
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  deploy_lambda:
+    name: Deploy Lambda
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        
+      - name: Configure AWS credentials from Test account
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Deploy fin-test
+        run: |
+          cd fin-test
+          python -m pip install --upgrade pip
+          pip install --target ./package yfinance
+          cd package
+          rm -r pandas numpy *.dist-info
+          zip -r9 ${OLDPWD}/lambda_function.zip .
+          cd ..
+          zip -g lambda_function.zip lambda_function.py
+          aws s3api put-object --bucket a-api --key lambda_function.zip --body lambda_function.zip
+          aws lambda update-function-code --function-name fin-test --s3-bucket a-api --s3-key lambda_function.zip

@@ -10,11 +10,11 @@ from psycopg2.extras import execute_values, Json
 import json
 
 def lambda_handler(event, context):
-    
     if 'tickers' in event['queryStringParameters']:
         tickers = event['queryStringParameters']['tickers']
         STOCKS = [stock.upper() for stock in tickers.split(',')]
     else:
+        #Shouldn't be hardcoded. Does this script already update all preexisting stocks in the db?
         STOCKS = ['AMZN', 'NLOK']
 
     postgres_connection = pg.connect(
@@ -148,5 +148,5 @@ def lambda_handler(event, context):
 
     return {
         'statusCode': 200,
-        'body': json.dumps('Success :)')
+        'body': json.dumps('The following stocks have been updated: ' + STOCK_STRING)
     }
