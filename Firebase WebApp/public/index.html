@@ -6,17 +6,31 @@
     <link rel="stylesheet" href="styles-index.css">
     <title>MTF WebApp</title>
 
-    <!-- update the version number as needed -->
-    <script defer src="/__/firebase/7.23.0/firebase-app.js"></script>
-    <!-- include only the Firebase features as you need -->
-    <!--
-    <script defer src="/__/firebase/7.23.0/firebase-auth.js"></script>
-    <script defer src="/__/firebase/7.23.0/firebase-database.js"></script>
-    <script defer src="/__/firebase/7.23.0/firebase-messaging.js"></script>
-    <script defer src="/__/firebase/7.23.0/firebase-storage.js"></script>
-    -->
-    <!-- initialize the SDK after all desired features are loaded -->
-    <script defer src="/__/firebase/init.js"></script>
+    <!-- The core Firebase JS SDK is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/7.23.0/firebase-app.js"></script>
+
+    <!-- TODO: Add SDKs for Firebase products that you want to use
+         https://firebase.google.com/docs/web/setup#available-libraries -->
+    <script src="https://www.gstatic.com/firebasejs/7.23.0/firebase-analytics.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.23.0/firebase-functions.js"></script>
+
+    <script>
+      // Your web app's Firebase configuration
+      // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+      var firebaseConfig = {
+        apiKey: "AIzaSyDKlpjc6JXo9cxTPakALHhdEXIVbuZL5tk",
+        authDomain: "masstechfinancial.firebaseapp.com",
+        databaseURL: "https://masstechfinancial.firebaseio.com",
+        projectId: "masstechfinancial",
+        storageBucket: "masstechfinancial.appspot.com",
+        messagingSenderId: "227359679013",
+        appId: "1:227359679013:web:79ebeae16948022a2ad5cc",
+        measurementId: "G-9QT30TW3H5"
+      };
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+      firebase.analytics();
+    </script>
 
     <script src="https://code.jquery.com/jquery-1.10.1.min.js"></script>
   </head>
@@ -29,6 +43,15 @@
             <th>Ticker</th>
         </tr>
     </table>
+    
+    <iframe
+        src=""
+        frameborder="0"
+        width="800"
+        height="600"
+        allowtransparency
+        id="metabase-embed"
+    ></iframe>
     
     <script src="main.js"></script>
     
