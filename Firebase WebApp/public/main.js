@@ -10,7 +10,7 @@ function getFunctionURL(name) {
 }
 
 function getAllTickers() {
-    const url = " https://niyqu0sase.execute-api.us-east-1.amazonaws.com/default/get-all-tickers"
+    const url = "https://niyqu0sase.execute-api.us-east-1.amazonaws.com/default/get-all-data"
     $.ajax({url:url, success: (response) => {
         console.log(response)
         response.forEach((ticker) => {

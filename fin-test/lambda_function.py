@@ -39,8 +39,13 @@ def get_stocks_in_database(cursor):
 
 def get_stock_data(cursor):
     search_query = '''
-        select distinct stock_name
-        from financial_data
+        SELECT *
+        FROM financial_data WHERE (stock_name, stock_date) IN (
+            SELECT stock_name, MAX(stock_date) AS stock_date
+            FROM financial_data
+            GROUP BY stock_name
+        )
+        ORDER BY stock_name
     '''
     cursor.execute(search_query)
     database_stocks = cursor.fetchall()
