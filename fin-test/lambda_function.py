@@ -67,7 +67,7 @@ def get_all_data(event, context):
     return {
         'statusCode': 200,
         'headers': { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*' },
-        'body': json.dumps(data)
+        'body': json.dumps(data, default=lambda x: x.__str__())
     }
 
 def get_all_tickers(event, context):
