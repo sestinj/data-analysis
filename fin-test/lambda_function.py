@@ -37,7 +37,34 @@ def get_stocks_in_database(cursor):
 
     return current_stocks
 
+def get_stock_data(cursor):
+    search_query = '''
+        select distinct stock_name
+        from financial_data
+    '''
+    cursor.execute(search_query)
+    database_stocks = cursor.fetchall()
+    
+    return database_stocks
+
 #LAMBDA FUNCTIONS
+def get_all_data(event, context):
+    """
+    Lambda Function get-all-data
+    Returns all tickers with corresponding data
+    """
+    postgres_connection, cursor = connect_postgres()
+
+    data = get_stock_data(cursor)
+
+    postgres_connection.close()
+
+    return {
+        'statusCode': 200,
+        'headers': { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*' },
+        'body': json.dumps(data)
+    }
+
 def get_all_tickers(event, context):
     """
     Lambda Function get-all-tickers
