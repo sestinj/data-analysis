@@ -14,8 +14,8 @@ function getAllTickers() {
     $.ajax({url:url, success: (response) => {
         console.log(response)
         response.forEach((ticker) => {
-            table.append(`<tr>
-            <td>${ticker}}</td></tr>`);
+            $('#ticker-list').append(`<tr>
+            <td>${ticker}</td></tr>`);
         });
     }});
 }

@@ -1,5 +1,5 @@
 const functions = require('firebase-functions');
-
+require('dotenv').config();
 // // Create and Deploy Your First Cloud Functions
 // // https://firebase.google.com/docs/functions/write-firebase-functions
 //
@@ -17,7 +17,7 @@ exports.generateMetabaseEmbedURL = functions.https.onRequest((req, res) => {
     
     var jwt = require("jsonwebtoken");
     var METABASE_SITE_URL = "http://chandler-metabase.herokuapp.com";
-    var METABASE_SECRET_KEY = "9326b343d4627eddd3de584b94c232f7eda61dbb6feaf41e17a650c883f566e2";
+    var METABASE_SECRET_KEY = process.env.METABASE_SECRET_KEY;
 
     var payload = {
       resource: { dashboard: 1 },
