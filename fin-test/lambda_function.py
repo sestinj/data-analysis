@@ -94,12 +94,12 @@ def lambda_handler(event, context):
     Adds tickers specified in queryStringParameters to table and updates all for current data.
     Runs on stock market close and HTTP call.
     """
-    if 'tickers' in event['queryStringParameters']:
-        tickers = event['queryStringParameters']['tickers']
-        STOCKS = [stock.upper() for stock in tickers.split(',')]
-    else:
-        #Shouldn't be hardcoded. Does this script already update all preexisting stocks in the db?
-        STOCKS = ['AMZN', 'NLOK']
+    #Shouldn't be hardcoded. Does this script already update all preexisting stocks in the db?
+    STOCKS = ['AMZN', 'NLOK']
+    if 'queryStringParameters' in event:
+        if 'tickers' in event['queryStringParameters']:
+            tickers = event['queryStringParameters']['tickers']
+            STOCKS = [stock.upper() for stock in tickers.split(',')]
     
     # Start the Database Connection
     postgres_connection, cursor = connect_postgres()
